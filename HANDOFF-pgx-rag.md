@@ -21,7 +21,7 @@
 | OpenFDA `drug/label.json` | ✅ | FDA 说明书（SPL→HTML），17 药 → **2416 切片**、**178 张表** |
 | DailyMed SPL | ✅ | 交叉核对 setid（17 中 15 一致） |
 | **CPIC `api.cpicpgx.org/v1`** | ✅ | **结构化**：50 药-基因对 / 247 条按表型推荐 / 70 条表型解读 / 6271 星型映射 |
-| **NMPA `nmpa.gov.cn`** | ❌ | 412 + JS 挑战 + **地域限制**（实测出口 IP 在澳门）；回大陆再说 |
+| **NMPA `nmpa.gov.cn`** | ❌ | 412 + JS 挑战（阿里云 WAF）+ 地区访问受限；后续用上传 PDF 的方式补齐 |
 | CPIC PDF（Wiley） | ❌ 403 | 用不到，已有结构化 API |
 
 ## 3. 当前进度
@@ -129,7 +129,7 @@ uv run streamlit run app/api/streamlit_app.py     # http://localhost:8501
 | P1 | 药师盲评包（10 条证据卡 + 打分表） | 可直接发给药师的文件 |
 | P2 | FastAPI + SSE + 引用高亮页 | 接口可被前端调用 |
 | P3 | 增量扩药 3–5 个（如 atorvastatin / fluorouracil） | 验证可扩展性 |
-| P4 | NMPA 三方差异（回大陆后，3–5 药） | 对照表 |
+| P4 | NMPA 三方差异（地区访问恢复后，3–5 药） | 对照表 |
 
 ## 9. 已知限制
 
