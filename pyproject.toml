@@ -1,0 +1,47 @@
+[project]
+name = "pgx-rag"
+version = "0.1.0"
+description = "药物基因组学精准用药 RAG · 循证问答（逐句引用 / 证据分级 / 证据不足拒答）"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+
+# 依赖与「电商问数」教学项目保持一致，只按本项目需要增补 lxml / httpx
+dependencies = [
+    "fastapi[standard]>=0.115",
+    "sqlalchemy>=2.0",
+    "asyncmy>=0.2.14",          # MySQL 异步驱动（docker 里的 MySQL）
+    "aiosqlite>=0.20",          # 降级：Docker 未就绪时用 SQLite
+    "qdrant-client>=1.15,<1.17",
+    "elasticsearch[async]>=8,<9",
+    "langchain>=1.0",
+    "langchain-deepseek>=1.0",
+    "langchain-huggingface>=1.0",
+    "langgraph>=1.0",
+    "omegaconf>=2.3",
+    "pyyaml>=6.0",
+    "loguru>=0.7",
+    "cryptography>=43",
+    "huggingface-hub>=0.26",
+    "greenlet>=3.0",
+    "python-dotenv>=1.0",
+    "lxml>=5.0",                # SPL HTML 表格解析
+    "httpx>=0.27",              # DashScope / OpenAI 兼容调用
+    "streamlit>=1.67.0",
+    "pillow>=13.0.0",
+]
+
+[project.optional-dependencies]
+# 教学项目用 jieba 做中文分词；这里做成可选：
+# 它只有 sdist，构建期要 chmod 临时目录，在受限沙箱里装不上。
+# 未安装时 app/core/tokenizer.py 自动退化为正则分词（对本项目的英文语料够用）。
+zh = ["jieba>=0.42"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.uv]
+link-mode = "copy"

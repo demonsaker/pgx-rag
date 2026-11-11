@@ -1,0 +1,28 @@
+# 依赖说明
+#
+# 本项目使用 **uv** 管理依赖，依赖清单位于 pyproject.toml 与 uv.lock。
+#
+#   uv sync              按 uv.lock 安装
+#   uv add <package>     新增依赖（同步更新 pyproject.toml 与 uv.lock）
+#   uv remove <package>  移除依赖
+#
+# 本文件不再维护 pip 依赖列表，避免与 pyproject 不一致。
+# 当前实际依赖（供快速浏览）：
+#
+#   fastapi[standard]        接口层（阶段 4）
+#   sqlalchemy / asyncmy     MySQL 异步访问
+#   qdrant-client            向量库（服务端 + 嵌入式）
+#   elasticsearch[async]     全文检索（已编排，暂未启用）
+#   langchain / langgraph    编排（LangGraph 工作流已用）
+#   langchain-deepseek       模型接入
+#   langchain-huggingface    HF 模型桥接（本地 embedding 时用）
+#   omegaconf / pyyaml / python-dotenv   配置与密钥
+#   loguru                   日志
+#   lxml                     SPL HTML 表格解析
+#   httpx                    DashScope / DeepSeek 调用
+#   numpy                    向量运算
+#   streamlit                Demo 页面
+#   pillow                   生成演示 GIF
+#
+# 可选：jieba（中文分词；sdist 在该环境装不上，未装时自动退化为正则分词）
+#   uv sync --extra zh

@@ -1,0 +1,65 @@
+# pgx-rag 全局配置（结构定义见 app/conf/app_config.py）
+# 约定同「电商问数」：YAML 只放值，dataclass 定义结构，OmegaConf 合并成对象。
+
+logging:
+  file:
+    enable: true
+    level: INFO
+    path: logs
+    rotation: "10 MB"
+    retention: "7 days"
+  console:
+    enable: true
+    level: INFO
+
+# 元数据库：存放药物、说明书、chunk、表格结构等结构化元数据
+# 注意：本机已有原生 MySQL80 占用 3306，docker-compose 把容器映射到 3307，这里要一致
+mysql:
+  host: localhost
+  port: 3307
+  user: didilili
+  password: dili123
+  database: pgx_meta
+
+# 向量库：chunk 文本向量（语义召回）
+qdrant:
+  host: localhost
+  port: 6333
+  embedding_size: 1024
+  collection: pgx_chunks
+  mode: server              # server（docker 容器）| embedded（进程内，Docker 不可用时）
+
+# 全文检索：字段取值/术语倒排（关键词召回），对应教学项目里的 ES
+es:
+  host: localhost
+  port: 9200
+  index_name: pgx_chunks
+
+# 向量化服务：优先用 docker 里的 TEI；TEI 不可用时 backend 改 dashscope
+embedding:
+  backend: tei                 # tei | dashscope
+  host: localhost
+  port: 8081
+  model: BAAI/bge-large-zh-v1.5
+  dimension: 1024
+  dashscope_model: text-embedding-v4
+  batch_size: 10
+  workers: 4
+
+# 生成模型：DeepSeek（OpenAI 兼容）；密钥从 .env 注入，不写进仓库
+llm:
+  model_name: deepseek-chat
+  api_key: ${oc.env:DEEPSEEK_API_KEY,""}
+  base_url: https://api.deepseek.com
+
+# 检索与生成参数
+rag:
+  top_k: 6
+  candidates: 40
+  max_priority: 7
+  corpus_path: data/corpus/chunks.jsonl
+  tables_path: data/corpus/tables.jsonl
+  # 指南原文也进检索语料：说明书不用 CPIC 的表型命名，只用标签会让 56% 的表型问题
+  # 变成"说明书未定义该表型"（实测）。设 false 可回到「只用说明书」的对照模式。
+  cpic_corpus_path: data/corpus/cpic_chunks.jsonl
+  include_cpic: true

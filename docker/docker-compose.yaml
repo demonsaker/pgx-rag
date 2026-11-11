@@ -1,0 +1,107 @@
+# 基础服务编排：MySQL / Qdrant / Elasticsearch / Kibana / TEI Embedding。
+#
+# 对应「电商问数」第 3、4 章的 docker-compose 思路：
+# 用一份文件把「结构化数据 + 全文检索 + 向量化 + 向量检索」四类能力一起描述清楚。
+#
+# 启动（在本目录下执行）：
+#     docker compose up -d                        # mysql / qdrant / elasticsearch / kibana
+#     docker compose --profile embedding up -d    # 再拉 TEI（需先放好模型，见 docker/README.md）
+#     docker compose ps
+#
+# 注意：
+#   * `down -v` 会连命名卷一起删掉（MySQL/ES/Qdrant 数据全没），只停服务用 `stop`。
+#   * 本文件必须是纯 YAML，注释只能用 `#`。原先开头误写成 python 的 """...""" 文档字符串，
+#     会让 docker compose 直接报 “expected '<document start>', but found '<scalar>'”。
+#   * embedding 用 profile 隔离，默认不启动：本机还没有模型文件，而且现有索引是
+#     dashscope:text-embedding-v4 建的，换成本地 TEI 需要重建索引。
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: pgx-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: dili123
+      MYSQL_USER: didilili
+      MYSQL_PASSWORD: dili123
+      MYSQL_DATABASE: pgx_meta
+    ports:
+      # 本机已装并运行原生 MySQL80（占用 3306），这里映射到 3307 避免端口冲突；
+      # conf/app_config.yaml 的 mysql.port 与之保持一致。
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pdili123"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:v1.16
+    container_name: pgx-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  elasticsearch:
+    build:
+      # 自定义镜像只为装 IK 中文分词插件，见 ./elasticsearch/Dockerfile
+      context: ./elasticsearch
+    container_name: pgx-elasticsearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      # 让 kibana 等到 ES 真正 ready 再启动，否则日志里会刷一屏 connection refused
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+
+  kibana:
+    image: kibana:8.19.10
+    container_name: pgx-kibana
+    restart: unless-stopped
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  embedding:
+    # 带 profile 的服务，`docker compose up -d` 会跳过它。
+    # 要启用：按 docker/README.md 把模型下到 ./embedding/bge-large-zh-v1.5，
+    # 再执行 `docker compose --profile embedding up -d`。
+    profiles: ["embedding"]
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
+    platform: linux/amd64
+    container_name: pgx-embedding
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      MODEL_ID: /models/bge-large-zh-v1.5
+      MAX_CONCURRENT_REQUESTS: "16"
+      MAX_BATCH_TOKENS: "16384"
+    volumes:
+      - ./embedding/bge-large-zh-v1.5:/models/bge-large-zh-v1.5
+
+volumes:
+  mysql_data:
+  es_data:
+  qdrant_data:

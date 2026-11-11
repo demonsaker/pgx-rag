@@ -1,0 +1,45 @@
+# 忽略规则（提交前务必确认 .env 不在其中）
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# uv 缓存与自装解释器（体积大，可重建）
+.uv-cache/
+.uv-python/
+.uvtest/
+.tmp/
+
+# 密钥与本地环境
+.env
+.env.*
+!.env-example
+*.pem
+*.key
+
+# 原始抓取快照（可由脚本重建）
+data/raw/
+
+# 向量 / 全文索引（体积大，可由脚本重建）
+data/index/
+
+# 运行日志（含答案样例，不入库）
+logs/
+
+# 备份文件
+*.bak
+
+# 教学仓库（第三方内容，只作参考）
+ai-agents-from-zero/
+
+# 旧实现归档（迁移完成后可删）
+legacy/
+
+# 构建产物
+reports/stage1_stats.json
+reports/stage2_retrieval.json
+
+# 早期探索脚本
+_probe*.py
