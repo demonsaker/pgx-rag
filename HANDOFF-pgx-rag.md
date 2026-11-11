@@ -67,7 +67,7 @@ reports/                各阶段报告
 legacy/                 旧实现归档（迁移参考，可删）
 ```
 
-## 5. 关键决策（不要重复踩坑）
+## 5. 关键决策（每条都有实测依据）
 
 1. 表格必须单独解析成行列矩阵（合并单元格/脚注/图片占位表都处理过）。
 2. SPL 的 `<footnote>` 内联在单元格里，要抽出来编号。
@@ -88,10 +88,10 @@ legacy/                 旧实现归档（迁移参考，可删）
 ## 6. 环境与运行
 
 ```powershell
-# 依赖：uv（缓存必须指到项目内，沙箱不允许写 %LOCALAPPDATA%）
+# 依赖：uv（若默认缓存目录不可写，可指到项目内）
 $env:UV_CACHE_DIR = "$PWD\.uv-cache"; uv sync
 
-# 基础服务（Docker Desktop 已装；MySQL 映射 3307 避开本机 MySQL80）
+# 基础服务（MySQL 映射到宿主 3307，避开已占用的 3306）
 docker compose -f docker/docker-compose.yaml up -d mysql qdrant
 
 # 数据 → 索引 → Demo
@@ -102,15 +102,15 @@ uv run python -m app.scripts.build_index
 uv run streamlit run app/api/streamlit_app.py     # http://localhost:8501
 ```
 
-**环境事实**
-- Python 3.12.15（uv 管理），`.venv` 在项目内；
-- 密钥：项目根 `.env`（`Deepseek_key` / `Qwen_key`），由 `app/conf/app_config.py` 注入；
-- 本机 pip 装不了包（沙箱 rmtree 被拒），只能用 `uv`；
-- `jieba` 是 sdist，装不上 → 已做成可选依赖，未装时用正则分词；
-- 访问本机容器端口的 HTTP 客户端需要 `NO_PROXY=localhost,127.0.0.1`（已在 `app/clients/vector.py` 处理）；
-- 沙箱默认只读；改代码前确认策略是 `workspace-write`。
+**环境约定**
+- Python 3.12（uv 管理），`.venv` 放在项目内；
+- 密钥：项目根 `.env`（`DEEPSEEK_API_KEY` / `DASHSCOPE_API_KEY`，兼容旧名 `Deepseek_key` / `Qwen_key`），
+  由 `app/conf/app_config.py` 统一注入；
+- 依赖统一走 `uv`，不使用 pip 全局安装；
+- `jieba` 是可选依赖（sdist 编译易失败），未安装时自动退化为正则分词；
+- 访问本机容器端口的 HTTP 客户端需要 `NO_PROXY=localhost,127.0.0.1`（已在 `app/clients/vector.py` 处理）。
 
-## 7. 评测口径（重要，别写错）
+## 7. 评测口径（引用时注意区分）
 
 - 题目由 CPIC **机械生成**（80 题）；金标准取自 CPIC 推荐原文；
 - RAG 链路不看 CPIC 表，只做检索+生成；方向由 **LLM 盲判**（不提供金标准）；

@@ -1,5 +1,5 @@
 # pgx-rag 全局配置（结构定义见 app/conf/app_config.py）
-# 约定同「电商问数」：YAML 只放值，dataclass 定义结构，OmegaConf 合并成对象。
+# 约定：YAML 只放值，dataclass 定义结构，OmegaConf 合并成对象。
 
 logging:
   file:
@@ -29,7 +29,7 @@ qdrant:
   collection: pgx_chunks
   mode: server              # server（docker 容器）| embedded（进程内，Docker 不可用时）
 
-# 全文检索：字段取值/术语倒排（关键词召回），对应教学项目里的 ES
+# 全文检索：字段取值/术语倒排（关键词召回），可选后端
 es:
   host: localhost
   port: 9200

@@ -77,6 +77,6 @@ uv run python -m app.scripts.ask "SLCO1B1 变异的人吃辛伐他汀会肌痛�
 | 问题 | 答法 |
 |---|---|
 | 为什么不用 ES？ | 2416 条规模下自写 BM25 建索引 <1s、查询 <10ms，且能精确控制基因/等位基因分词；ES 已写进编排，规模上来再切 |
-| 为什么不用 bge-m3？ | 本机无 GPU、装 torch 受阻，先用 DashScope 1024 维多语言 embedding；代码已做成双后端，TEI 一起来就能切 |
+| 为什么不用 bge-m3？ | 运行环境无 GPU、装 torch 受阻，先用 DashScope 1024 维多语言 embedding；代码已做成双后端，TEI 一起来就能切 |
 | 重排为什么关掉？ | 实测 gte-rerank 把 MRR 从 0.929 拉到 0.707，调参记录在 `reports/stage2_retrieval.md` |
 | 怎么防幻觉？ | 三道：证据分级前置（D 级不调模型）、逐句引用回填与越界检查、数字一致性校验（待补） |

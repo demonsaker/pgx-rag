@@ -69,5 +69,5 @@ cross-encoder 更容易给它打高分；gte-rerank 对跨语言和章节权威�
 
 - 评测集只有 7 问，且调参在同一批问题上做，指标偏乐观（需扩集 + 交叉验证）；
 - 中文术语桥是**可枚举词表**，遇到表外说法（如「我不太能代谢」）会失效；
-- 向量模型是云端 `text-embedding-v4`（本机无 GPU）；TEI + bge-large-zh 已编排未启动；
+- 向量模型是云端 `text-embedding-v4`（运行环境无 GPU）；TEI + bge-large-zh 已编排未启动；
 - 说明书里的图片型图表（`<rendermultimedia>`）无法解析，已丢弃 4 张。
